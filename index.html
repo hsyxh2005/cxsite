@@ -7,6 +7,11 @@
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
+  <!-- Loading 遮罩 -->
+  <div id="loading-overlay" class="loading-overlay">
+    <div class="loading-spinner"></div>
+  </div>
+
   <!-- 顶部进度条 -->
   <div id="progress-bar" class="progress-bar"></div>
 
@@ -23,11 +28,10 @@
     <div class="nav-right">
       <input type="text" id="search-input" class="search-input" placeholder="搜索…">
       <button id="theme-toggle" class="theme-btn" title="切换深色模式">🌙</button>
+      <!-- 搜索结果容器 -->
+      <div id="search-results" class="search-results hidden"></div>
     </div>
   </nav>
-
-  <!-- 搜索结果显示区域 -->
-  <div id="search-results" class="search-results hidden"></div>
 
   <!-- 主内容容器 -->
   <main id="main-content">
@@ -62,7 +66,7 @@
       <div id="about-container"></div>
     </section>
 
-    <!-- 详情页容器（文章/随笔详情） -->
+    <!-- 详情页容器 -->
     <div id="detail-view" class="hidden detail-view">
       <button id="back-btn" class="back-btn">← 返回</button>
       <div id="detail-content"></div>

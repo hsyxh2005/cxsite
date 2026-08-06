@@ -19,20 +19,36 @@ function getExcerpt(content, len = 65) {
   return plain.length > len ? plain.slice(0, len) + '…' : plain;
 }
 
-// ===== 全局数据存储 =====
-let allData = {};
-let searchableItems = [];
-
-// ===== 进度条 =====
-function showProgress() {
-  const bar = document.getElementById('progress-bar');
-  bar.classList.add('active');
-  setTimeout(() => bar.classList.remove('active'), 1800);
+function escapeRegExp(str) {
+  return str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 }
 
-// ===== 路由管理 =====
+// ===== 全局数据 =====
+let allData = {};
+let searchableItems = [];
+let progressTimer = null;
+
+// ===== 进度条 =====
+function startProgress() {
+  const bar = document.getElementById('progress-bar');
+  bar.style.width = '0%';
+  bar.classList.add('active');
+  requestAnimationFrame(() => {
+    bar.style.width = '30%';
+  });
+  if (progressTimer) clearTimeout(progressTimer);
+  progressTimer = setTimeout(() => {
+    bar.style.width = '100%';
+    setTimeout(() => {
+      bar.classList.remove('active');
+      bar.style.width = '0%';
+    }, 300);
+  }, 900);
+}
+
+// ===== 路由 =====
 function navigate(hash) {
-  showProgress();
+  startProgress();
   window.location.hash = hash;
 }
 
@@ -46,17 +62,14 @@ function handleRoute() {
   document.querySelectorAll('.section').forEach(s => s.classList.add('hidden'));
   document.getElementById('detail-view').classList.add('hidden');
 
-  // 更新导航激活状态
+  // 更新导航激活
   document.querySelectorAll('.nav-links a').forEach(a => {
     a.classList.toggle('active', a.getAttribute('href') === `#${route}`);
   });
 
-  if (route === 'article' && subIndex !== undefined) {
-    showDetail('articles', parseInt(subIndex));
-  } else if (route === 'essay' && subIndex !== undefined) {
-    showDetail('essays', parseInt(subIndex));
+  if ((route === 'article' || route === 'essay') && subIndex !== undefined) {
+    showDetail(route === 'article' ? 'articles' : 'essays', parseInt(subIndex));
   } else {
-    // 显示对应板块
     const section = document.getElementById(`section-${route}`);
     if (section) {
       section.classList.remove('hidden');
@@ -75,7 +88,7 @@ function handleRoute() {
   }
 }
 
-// ===== 详情显示 =====
+// ===== 详情 =====
 function showDetail(type, index) {
   const items = type === 'articles' ? allData.articles : allData.essays;
   const item = items[index];
@@ -90,11 +103,11 @@ function showDetail(type, index) {
   `;
   detailView.classList.remove('hidden');
   document.getElementById('back-btn').onclick = () => {
-    window.history.back(); // 回到上一页
+    window.history.back();
   };
 }
 
-// ===== 搜索功能 =====
+// ===== 搜索 =====
 function performSearch(query) {
   const resultsContainer = document.getElementById('search-results');
   if (!query.trim()) {
@@ -110,40 +123,23 @@ function performSearch(query) {
   if (results.length === 0) {
     resultsContainer.innerHTML = '<div style="padding:12px;color:var(--text-secondary);">无结果</div>';
   } else {
-    resultsContainer.innerHTML = results.map((r, i) => `
-      <div class="search-result-item" data-type="${r.type}" data-index="${r.index}">
-        <div class="search-result-type">${r.typeLabel}</div>
-        <div class="search-result-title">${highlightMatch(r.title, query)}</div>
-        <div class="search-result-snippet">${highlightMatch(getExcerpt(r.content, 80), query)}</div>
-      </div>
-    `).join('');
-    // 点击跳转
-    resultsContainer.querySelectorAll('.search-result-item').forEach(el => {
-      el.addEventListener('click', () => {
-        const type = el.dataset.type;
-        const index = el.dataset.index;
-        if (type === 'articles' || type === 'essays') {
-          navigate(`#${type}/${index}`);
-        } else {
-          navigate(`#${type}`);
-        }
-        document.getElementById('search-input').value = '';
-        resultsContainer.classList.add('hidden');
-      });
-    });
+    resultsContainer.innerHTML = results.map((r, i) => {
+      const highlightedTitle = r.title.replace(new RegExp(`(${escapeRegExp(query)})`, 'gi'), '<mark style="background:var(--accent);color:white;border-radius:4px;padding:0 2px;">$1</mark>');
+      const snippet = getExcerpt(r.content, 80);
+      const highlightedSnippet = snippet.replace(new RegExp(`(${escapeRegExp(query)})`, 'gi'), '<mark style="background:var(--accent);color:white;border-radius:4px;padding:0 2px;">$1</mark>');
+      return `
+        <div class="search-result-item" data-type="${r.type}" data-index="${r.index}">
+          <div class="search-result-type">${r.typeLabel}</div>
+          <div class="search-result-title">${highlightedTitle}</div>
+          <div class="search-result-snippet">${highlightedSnippet}</div>
+        </div>
+      `;
+    }).join('');
   }
   resultsContainer.classList.remove('hidden');
 }
 
-function highlightMatch(text, query) {
-  const regex = new RegExp(`(${escapeRegExp(query)})`, 'gi');
-  return text.replace(regex, '<mark style="background:var(--accent);color:white;border-radius:4px;padding:0 2px;">$1</mark>');
-}
-function escapeRegExp(str) {
-  return str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-}
-
-// ===== 渲染函数 =====
+// ===== 渲染 =====
 function renderSection(containerId, items, type) {
   const container = document.getElementById(containerId);
   container.innerHTML = '';
@@ -213,6 +209,7 @@ function initTheme() {
 
 // ===== 主程序 =====
 async function loadData() {
+  startProgress(); // 开始加载数据时显示进度条
   try {
     const [home, projects, articles, essays, about] = await Promise.all([
       fetch('data/home.json').then(r => r.json()),
@@ -257,6 +254,9 @@ async function loadData() {
     // 动态年份
     document.getElementById('year').textContent = new Date().getFullYear();
 
+    // 隐藏 loading 遮罩
+    document.getElementById('loading-overlay').classList.add('hidden');
+
     // 初始路由
     handleRoute();
 
@@ -270,6 +270,7 @@ async function loadData() {
       clearTimeout(debounceTimer);
       debounceTimer = setTimeout(() => performSearch(searchInput.value), 300);
     });
+
     // 点击外部关闭搜索结果
     document.addEventListener('click', (e) => {
       if (!e.target.closest('.search-results') && !e.target.closest('#search-input')) {
@@ -279,9 +280,25 @@ async function loadData() {
 
   } catch (err) {
     console.error('数据加载失败', err);
+    document.getElementById('loading-overlay').classList.add('hidden');
     document.body.innerHTML += '<p style="color:red; text-align:center;margin-top:40px;">内容加载失败，请刷新重试</p>';
   }
 }
+
+// ===== 搜索点击跳转（事件委托） =====
+document.getElementById('search-results').addEventListener('click', (e) => {
+  const item = e.target.closest('.search-result-item');
+  if (!item) return;
+  const type = item.dataset.type;
+  const index = item.dataset.index;
+  if (type === 'articles' || type === 'essays') {
+    navigate(`#${type}/${index}`);
+  } else {
+    navigate(`#${type}`);
+  }
+  document.getElementById('search-input').value = '';
+  document.getElementById('search-results').classList.add('hidden');
+});
 
 // ===== 启动 =====
 initTheme();
