@@ -141,14 +141,17 @@ body {
 }
 .nav-links a.active::after { width: 80%; }
 
+/* ===== 关键修复：nav-right 和搜索框不允许被 flex 压缩 ===== */
 .nav-right {
   position: relative;
   display: flex;
   align-items: center;
   gap: 12px;
+  flex-shrink: 0;          /* 防止整个右侧区域被压缩 */
 }
 
 .search-input {
+  flex-shrink: 0;          /* 防止搜索框本身被压缩 */
   background: var(--card-bg);
   border: 1px solid var(--border);
   border-radius: 99px;
@@ -166,13 +169,13 @@ body {
   box-shadow: 0 0 0 3px rgba(67,97,238,0.2);
 }
 
-/* ===== 搜索结果（修正定位） ===== */
+/* ===== 搜索结果 ===== */
 .search-results {
   position: absolute;
   top: calc(100% + 8px);
-  right: 0;          /* 靠右对齐 */
-  left: auto;        /* 不设左边界 */
-  width: 360px;      /* 固定宽度，避免溢出 */
+  right: 0;
+  left: auto;
+  width: 360px;
   max-height: 420px;
   overflow-y: auto;
   background: var(--card-bg);
@@ -245,9 +248,9 @@ body {
   to { opacity: 1; transform: translateY(0); }
 }
 
-/* ===== 区块（关键修正：提高 .hidden 优先级） ===== */
+/* ===== 区块隐藏/显示 ===== */
 .section { margin-bottom: 34px; scroll-margin-top: 72px; }
-.section.hidden { display: none !important; }  /* 强制隐藏 */
+.section.hidden { display: none !important; }
 .section.active-section { display: block; animation: slideFadeIn 0.4s ease; }
 
 @keyframes slideFadeIn {
@@ -319,7 +322,7 @@ body {
   margin: 0 auto;
   padding: 20px 0;
 }
-.detail-view.hidden { display: none !important; }  /* 强制隐藏 */
+.detail-view.hidden { display: none !important; }
 .back-btn {
   background: var(--card-bg);
   border: 1px solid var(--border);
@@ -424,6 +427,9 @@ body {
 @media (max-width: 670px) {
   .hero h1 { font-size: 2rem; }
   .nav-links { gap: 8px; }
+  .nav-right {
+    margin-left: auto;   /* 换行时保持靠右 */
+  }
   .search-input { width: 140px; }
   .search-input:focus { width: 180px; }
   .search-results { right: 0; width: calc(100vw - 40px); }

@@ -28,9 +28,39 @@ let allData = {};
 let searchableItems = [];
 let progressTimer = null;
 
+// ===== 默认数据（防止 JSON 缺失导致首页空白） =====
+const DEFAULT_DATA = {
+  home: {
+    name: '你的名字',
+    title: '会计专业 · 自用软件开发者',
+    intro: '欢迎来到我的个人主页！这里是我的自用软件与文章分享空间。',
+  },
+  projects: [],
+  articles: [],
+  essays: [],
+  about: {
+    bio: '这里填写你的个人简介。',
+    skills: ['JavaScript', 'HTML', 'CSS'],
+    links: [],
+  }
+};
+
+// ===== 数据合并工具 =====
+function safeMerge(defaultObj, data) {
+  if (data && typeof data === 'object' && !Array.isArray(data)) {
+    return { ...defaultObj, ...data };
+  }
+  return defaultObj;
+}
+
+function safeArray(data) {
+  return Array.isArray(data) ? data : [];
+}
+
 // ===== 进度条 =====
 function startProgress() {
   const bar = document.getElementById('progress-bar');
+  if (!bar) return;
   bar.style.width = '0%';
   bar.classList.add('active');
   requestAnimationFrame(() => {
@@ -50,7 +80,6 @@ function startProgress() {
 function navigate(hash) {
   startProgress();
   window.location.hash = hash;
-  // 立即执行路由处理，避免依赖 hashchange 事件延迟
   handleRoute();
 }
 
@@ -60,14 +89,14 @@ function handleRoute() {
   const route = parts[0].replace('#', '');
   const subIndex = parts[1];
 
-  // 1. 隐藏所有 section（同时移除 active-section 类）
+  // 1. 隐藏所有 section
   document.querySelectorAll('.section').forEach(s => {
     s.classList.add('hidden');
     s.classList.remove('active-section');
   });
   // 2. 隐藏详情视图
   const detailView = document.getElementById('detail-view');
-  detailView.classList.add('hidden');
+  if (detailView) detailView.classList.add('hidden');
 
   // 3. 更新导航激活
   document.querySelectorAll('.nav-links a').forEach(a => {
@@ -82,7 +111,7 @@ function handleRoute() {
     if (section) {
       section.classList.remove('hidden');
       section.classList.add('active-section');
-      // 触发滚动动画
+      // 滚动动画
       const observer = new IntersectionObserver((entries) => {
         entries.forEach(e => {
           if (e.isIntersecting) {
@@ -98,9 +127,10 @@ function handleRoute() {
 
 // ===== 详情 =====
 function showDetail(type, index) {
+  if (!allData) return;
   const items = type === 'articles' ? allData.articles : allData.essays;
+  if (!items || !items[index]) return;
   const item = items[index];
-  if (!item) return;
 
   const detailView = document.getElementById('detail-view');
   const detailContent = document.getElementById('detail-content');
@@ -118,6 +148,7 @@ function showDetail(type, index) {
 // ===== 搜索 =====
 function performSearch(query) {
   const resultsContainer = document.getElementById('search-results');
+  if (!resultsContainer) return;
   if (!query.trim()) {
     resultsContainer.classList.add('hidden');
     return;
@@ -150,6 +181,7 @@ function performSearch(query) {
 // ===== 渲染 =====
 function renderSection(containerId, items, type) {
   const container = document.getElementById(containerId);
+  if (!container) return;
   container.innerHTML = '';
   items.forEach((item, i) => {
     let el;
@@ -219,7 +251,8 @@ function initTheme() {
 async function loadData() {
   startProgress();
   try {
-    const [home, projects, articles, essays, about] = await Promise.all([
+    // 使用 Promise.allSettled 避免单个文件失败导致整个页面崩溃
+    const results = await Promise.allSettled([
       fetch('data/home.json').then(r => r.json()),
       fetch('data/projects.json').then(r => r.json()),
       fetch('data/articles.json').then(r => r.json()),
@@ -227,13 +260,20 @@ async function loadData() {
       fetch('data/about.json').then(r => r.json()),
     ]);
 
+    // 用默认值兜底
+    const home = safeMerge(DEFAULT_DATA.home, results[0].status === 'fulfilled' ? results[0].value : null);
+    const projects = safeArray(results[1].status === 'fulfilled' ? results[1].value : null);
+    const articles = safeArray(results[2].status === 'fulfilled' ? results[2].value : null);
+    const essays = safeArray(results[3].status === 'fulfilled' ? results[3].value : null);
+    const about = safeMerge(DEFAULT_DATA.about, results[4].status === 'fulfilled' ? results[4].value : null);
+
     allData = { home, projects, articles, essays, about };
 
-    // 填充首页
-    document.getElementById('hero-name').textContent = home.name;
-    document.getElementById('hero-title').textContent = home.title;
-    document.getElementById('hero-intro').textContent = home.intro;
-    document.getElementById('nav-brand').textContent = home.name;
+    // 填充首页（防止空字符串导致空白）
+    document.getElementById('hero-name').textContent = home.name || DEFAULT_DATA.home.name;
+    document.getElementById('hero-title').textContent = home.title || DEFAULT_DATA.home.title;
+    document.getElementById('hero-intro').textContent = home.intro || DEFAULT_DATA.home.intro;
+    document.getElementById('nav-brand').textContent = home.name || DEFAULT_DATA.home.name;
 
     // 渲染各板块
     renderSection('projects-container', projects, 'project');
@@ -262,9 +302,8 @@ async function loadData() {
     // 动态年份
     document.getElementById('year').textContent = new Date().getFullYear();
 
-    // 先执行路由处理，再隐藏 loading（确保内容可见）
+    // 先执行路由处理，再隐藏 loading
     handleRoute();
-    // 隐藏 loading 遮罩
     document.getElementById('loading-overlay').classList.add('hidden');
 
     // 监听 hash 变化
@@ -287,8 +326,36 @@ async function loadData() {
 
   } catch (err) {
     console.error('数据加载失败', err);
+    // 即使全部失败，也渲染默认数据，保证页面不空白
+    allData = {
+      home: DEFAULT_DATA.home,
+      projects: DEFAULT_DATA.projects,
+      articles: DEFAULT_DATA.articles,
+      essays: DEFAULT_DATA.essays,
+      about: DEFAULT_DATA.about,
+    };
+
+    document.getElementById('hero-name').textContent = DEFAULT_DATA.home.name;
+    document.getElementById('hero-title').textContent = DEFAULT_DATA.home.title;
+    document.getElementById('hero-intro').textContent = DEFAULT_DATA.home.intro;
+    document.getElementById('nav-brand').textContent = DEFAULT_DATA.home.name;
+
+    renderSection('projects-container', DEFAULT_DATA.projects, 'project');
+    renderSection('articles-container', DEFAULT_DATA.articles, 'article');
+    renderSection('essays-container', DEFAULT_DATA.essays, 'essay');
+
+    document.getElementById('about-container').innerHTML = `
+      <p class="about-bio">${DEFAULT_DATA.about.bio}</p>
+      <div class="about-skills">
+        ${DEFAULT_DATA.about.skills.map(s => `<span class="about-skill">${s}</span>`).join('')}
+      </div>
+      <div class="about-links"></div>
+    `;
+
+    document.getElementById('year').textContent = new Date().getFullYear();
+
+    handleRoute();
     document.getElementById('loading-overlay').classList.add('hidden');
-    document.body.innerHTML += '<p style="color:red; text-align:center;margin-top:40px;">内容加载失败，请刷新重试</p>';
   }
 }
 
