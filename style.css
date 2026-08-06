@@ -231,6 +231,11 @@ body {
   opacity: 0;
   animation: fadeSlideUp 0.8s ease-out forwards;
 }
+/* 首次加载后添加 .loaded，避免路由切换时动画重播 */
+.hero.loaded {
+  opacity: 1;
+  animation: none;
+}
 .hero h1 { 
   font-size: 2.8rem; 
   margin-bottom: 0.3rem; 

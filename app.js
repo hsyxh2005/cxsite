@@ -111,6 +111,17 @@ function handleRoute() {
     if (section) {
       section.classList.remove('hidden');
       section.classList.add('active-section');
+
+      // 如果是首页，添加 .loaded 避免 hero 动画重播
+      if (route === 'home') {
+        section.classList.add('loaded');
+        // 防止首页简介被意外清空
+        const introEl = document.getElementById('hero-intro');
+        if (introEl && !introEl.textContent.trim() && allData.home) {
+          introEl.textContent = allData.home.intro || DEFAULT_DATA.home.intro;
+        }
+      }
+
       // 滚动动画
       const observer = new IntersectionObserver((entries) => {
         entries.forEach(e => {
@@ -228,23 +239,20 @@ function initTheme() {
 
   document.getElementById('theme-toggle').addEventListener('click', () => {
     const current = localStorage.getItem('themeMode') || 'auto';
+    // 三态循环：auto -> light -> dark -> auto
     let next;
-    if (current === 'auto') {
-      const curTheme = document.documentElement.dataset.theme;
-      next = curTheme === 'dark' ? 'light' : 'dark';
-    } else if (current === 'light') {
-      next = 'dark';
-    } else {
-      next = 'light';
-    }
+    if (current === 'auto') next = 'light';
+    else if (current === 'light') next = 'dark';
+    else next = 'auto';
     localStorage.setItem('themeMode', next);
     applyTheme(next);
   });
 
+  // 每 10 秒检查一次自动模式，到点立即切换
   setInterval(() => {
     const mode = localStorage.getItem('themeMode') || 'auto';
     if (mode === 'auto') applyTheme('auto');
-  }, 60000);
+  }, 10000);
 }
 
 // ===== 主程序 =====
@@ -270,10 +278,14 @@ async function loadData() {
     allData = { home, projects, articles, essays, about };
 
     // 填充首页（防止空字符串导致空白）
-    document.getElementById('hero-name').textContent = home.name || DEFAULT_DATA.home.name;
-    document.getElementById('hero-title').textContent = home.title || DEFAULT_DATA.home.title;
-    document.getElementById('hero-intro').textContent = home.intro || DEFAULT_DATA.home.intro;
-    document.getElementById('nav-brand').textContent = home.name || DEFAULT_DATA.home.name;
+    const heroName = document.getElementById('hero-name');
+    const heroTitle = document.getElementById('hero-title');
+    const heroIntro = document.getElementById('hero-intro');
+    const navBrand = document.getElementById('nav-brand');
+    if (heroName) heroName.textContent = home.name || DEFAULT_DATA.home.name;
+    if (heroTitle) heroTitle.textContent = home.title || DEFAULT_DATA.home.title;
+    if (heroIntro) heroIntro.textContent = home.intro || DEFAULT_DATA.home.intro;
+    if (navBrand) navBrand.textContent = home.name || DEFAULT_DATA.home.name;
 
     // 渲染各板块
     renderSection('projects-container', projects, 'project');
@@ -282,15 +294,17 @@ async function loadData() {
 
     // 关于
     const aboutContainer = document.getElementById('about-container');
-    aboutContainer.innerHTML = `
-      <p class="about-bio">${about.bio}</p>
-      <div class="about-skills">
-        ${about.skills.map(s => `<span class="about-skill">${s}</span>`).join('')}
-      </div>
-      <div class="about-links">
-        ${about.links.map(l => `<a href="${l.url}" target="_blank">${l.label}</a>`).join('')}
-      </div>
-    `;
+    if (aboutContainer) {
+      aboutContainer.innerHTML = `
+        <p class="about-bio">${about.bio}</p>
+        <div class="about-skills">
+          ${about.skills.map(s => `<span class="about-skill">${s}</span>`).join('')}
+        </div>
+        <div class="about-links">
+          ${about.links.map(l => `<a href="${l.url}" target="_blank">${l.label}</a>`).join('')}
+        </div>
+      `;
+    }
 
     // 构建搜索索引
     searchableItems = [
@@ -300,11 +314,17 @@ async function loadData() {
     ];
 
     // 动态年份
-    document.getElementById('year').textContent = new Date().getFullYear();
+    const yearEl = document.getElementById('year');
+    if (yearEl) yearEl.textContent = new Date().getFullYear();
+
+    // 第一次路由处理前，给首页添加 .loaded（此时所有数据已填充）
+    const homeSection = document.getElementById('section-home');
+    if (homeSection) homeSection.classList.add('loaded');
 
     // 先执行路由处理，再隐藏 loading
     handleRoute();
-    document.getElementById('loading-overlay').classList.add('hidden');
+    const loadingOverlay = document.getElementById('loading-overlay');
+    if (loadingOverlay) loadingOverlay.classList.add('hidden');
 
     // 监听 hash 变化
     window.addEventListener('hashchange', handleRoute);
@@ -312,15 +332,18 @@ async function loadData() {
     // 搜索输入
     const searchInput = document.getElementById('search-input');
     let debounceTimer;
-    searchInput.addEventListener('input', () => {
-      clearTimeout(debounceTimer);
-      debounceTimer = setTimeout(() => performSearch(searchInput.value), 300);
-    });
+    if (searchInput) {
+      searchInput.addEventListener('input', () => {
+        clearTimeout(debounceTimer);
+        debounceTimer = setTimeout(() => performSearch(searchInput.value), 300);
+      });
+    }
 
     // 点击外部关闭搜索结果
     document.addEventListener('click', (e) => {
       if (!e.target.closest('.search-results') && !e.target.closest('#search-input')) {
-        document.getElementById('search-results').classList.add('hidden');
+        const results = document.getElementById('search-results');
+        if (results) results.classList.add('hidden');
       }
     });
 
@@ -354,8 +377,12 @@ async function loadData() {
 
     document.getElementById('year').textContent = new Date().getFullYear();
 
+    const homeSection = document.getElementById('section-home');
+    if (homeSection) homeSection.classList.add('loaded');
+
     handleRoute();
-    document.getElementById('loading-overlay').classList.add('hidden');
+    const loadingOverlay = document.getElementById('loading-overlay');
+    if (loadingOverlay) loadingOverlay.classList.add('hidden');
   }
 }
 
