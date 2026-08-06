@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="zh-CN" data-theme="light">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>你的名字 · 个人页</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <!-- 顶部导航 -->
+  <nav class="nav">
+    <div class="nav-brand" id="nav-brand">你的名字</div>
+    <div class="nav-links" id="nav-links">
+      <a href="#home">首页</a>
+      <a href="#projects">开发</a>
+      <a href="#articles">文章</a>
+      <a href="#essays">随笔</a>
+      <a href="#about">关于</a>
+    </div>
+    <button id="theme-toggle" class="theme-btn" title="切换深色模式">🌙</button>
+  </nav>
+
+  <!-- 首页 Hero -->
+  <section class="hero section" id="home">
+    <h1 id="hero-name">你的名字</h1>
+    <p class="subtitle" id="hero-title">会计专业 · 自用软件开发者</p>
+    <p id="hero-intro" class="hero-intro"></p>
+  </section>
+
+  <!-- 开发情况 -->
+  <section class="section" id="projects">
+    <h2 class="section-title">开发情况</h2>
+    <div id="projects-container"></div>
+  </section>
+
+  <!-- 文章 -->
+  <section class="section" id="articles">
+    <h2 class="section-title">文章</h2>
+    <div id="articles-container"></div>
+  </section>
+
+  <!-- 随笔 -->
+  <section class="section" id="essays">
+    <h2 class="section-title">随笔</h2>
+    <div id="essays-container"></div>
+  </section>
+
+  <!-- 关于 -->
+  <section class="section" id="about">
+    <h2 class="section-title">关于</h2>
+    <div id="about-container"></div>
+  </section>
+
+  <!-- 页脚 -->
+  <footer class="footer">
+    <p>© <span id="year"></span> 你的名字 · 部分项目仅供自用</p>
+  </footer>
+
+  <script src="app.js"></script>
+</body>
+</html>
