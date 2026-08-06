@@ -1,0 +1,8 @@
+{
+  "bio": "会计专业本科在读，业余时间自学编程，累计开发了 10+ 自用软件。",
+  "skills": ["Java", "Kotlin", "Python", "JavaScript", "Linux"],
+  "links": [
+    { "label": "GitHub", "url": "https://github.com/yourname" },
+    { "label": "Email", "url": "mailto:you@example.com" }
+  ]
+}
