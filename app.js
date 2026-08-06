@@ -50,6 +50,8 @@ function startProgress() {
 function navigate(hash) {
   startProgress();
   window.location.hash = hash;
+  // 立即执行路由处理，避免依赖 hashchange 事件延迟
+  handleRoute();
 }
 
 function handleRoute() {
@@ -58,15 +60,21 @@ function handleRoute() {
   const route = parts[0].replace('#', '');
   const subIndex = parts[1];
 
-  // 隐藏所有 section
-  document.querySelectorAll('.section').forEach(s => s.classList.add('hidden'));
-  document.getElementById('detail-view').classList.add('hidden');
+  // 1. 隐藏所有 section（同时移除 active-section 类）
+  document.querySelectorAll('.section').forEach(s => {
+    s.classList.add('hidden');
+    s.classList.remove('active-section');
+  });
+  // 2. 隐藏详情视图
+  const detailView = document.getElementById('detail-view');
+  detailView.classList.add('hidden');
 
-  // 更新导航激活
+  // 3. 更新导航激活
   document.querySelectorAll('.nav-links a').forEach(a => {
     a.classList.toggle('active', a.getAttribute('href') === `#${route}`);
   });
 
+  // 4. 判断路由
   if ((route === 'article' || route === 'essay') && subIndex !== undefined) {
     showDetail(route === 'article' ? 'articles' : 'essays', parseInt(subIndex));
   } else {
@@ -209,7 +217,7 @@ function initTheme() {
 
 // ===== 主程序 =====
 async function loadData() {
-  startProgress(); // 开始加载数据时显示进度条
+  startProgress();
   try {
     const [home, projects, articles, essays, about] = await Promise.all([
       fetch('data/home.json').then(r => r.json()),
@@ -254,11 +262,10 @@ async function loadData() {
     // 动态年份
     document.getElementById('year').textContent = new Date().getFullYear();
 
+    // 先执行路由处理，再隐藏 loading（确保内容可见）
+    handleRoute();
     // 隐藏 loading 遮罩
     document.getElementById('loading-overlay').classList.add('hidden');
-
-    // 初始路由
-    handleRoute();
 
     // 监听 hash 变化
     window.addEventListener('hashchange', handleRoute);

@@ -161,19 +161,19 @@ body {
   backdrop-filter: blur(4px);
 }
 .search-input:focus {
-  width: 230px;
+  width: 240px;
   border-color: var(--accent);
   box-shadow: 0 0 0 3px rgba(67,97,238,0.2);
 }
 
-/* ===== 搜索结果 ===== */
+/* ===== 搜索结果（修正定位） ===== */
 .search-results {
   position: absolute;
   top: calc(100% + 8px);
-  right: 0;
-  left: auto;
-  width: 350px;
-  max-height: 380px;
+  right: 0;          /* 靠右对齐 */
+  left: auto;        /* 不设左边界 */
+  width: 360px;      /* 固定宽度，避免溢出 */
+  max-height: 420px;
   overflow-y: auto;
   background: var(--card-bg);
   backdrop-filter: blur(12px);
@@ -245,9 +245,9 @@ body {
   to { opacity: 1; transform: translateY(0); }
 }
 
-/* ===== 区块 ===== */
+/* ===== 区块（关键修正：提高 .hidden 优先级） ===== */
 .section { margin-bottom: 34px; scroll-margin-top: 72px; }
-.section.hidden { display: none; }
+.section.hidden { display: none !important; }  /* 强制隐藏 */
 .section.active-section { display: block; animation: slideFadeIn 0.4s ease; }
 
 @keyframes slideFadeIn {
@@ -315,11 +315,11 @@ body {
 
 /* ===== 详情视图 ===== */
 .detail-view {
-  max-width: 750px;
+  max-width: 780px;
   margin: 0 auto;
   padding: 20px 0;
 }
-.detail-view.hidden { display: none; }
+.detail-view.hidden { display: none !important; }  /* 强制隐藏 */
 .back-btn {
   background: var(--card-bg);
   border: 1px solid var(--border);
@@ -421,11 +421,11 @@ body {
 }
 
 /* ===== 响应式 ===== */
-@media (max-width: 650px) {
+@media (max-width: 670px) {
   .hero h1 { font-size: 2rem; }
-  .nav-links { gap: 10px; }
-  .search-input { width: 130px; }
-  .search-input:focus { width: 170px; }
+  .nav-links { gap: 8px; }
+  .search-input { width: 140px; }
+  .search-input:focus { width: 180px; }
   .search-results { right: 0; width: calc(100vw - 40px); }
   body { padding: 0 12px 30px; }
 }
