@@ -1,0 +1,29 @@
+[
+  {
+    "title": "GitHub",
+    "url": "https://github.com/hsyxh2005",
+    "avatar":"https://cxsite.drtcx.com/icon.png",
+    "desc": "我的 GitHub 主页，上面有我的项目"
+  },
+  {
+    "title": "番茄小说",
+    "url": "https://fanqienovel.com/page/7393977598411295806",
+    "desc": "我在番茄小说上的作品1"
+  },
+  {
+    "title": "番茄小说",
+    "url": "https://fanqienovel.com/page/7403708959636327486",
+    "desc": "我在番茄小说上的作品2"
+  },
+  {
+    "title": "个人邮箱",
+    "url": "3857309293@qq.com",
+    "desc": "在这里联系本人"
+  },
+  {
+    "title": "JerryGaoのBlog",
+    "url":"https://www.jerrygao.cn/",
+    "avatar":"https://www.jerrygao.cn/icons/icon-512.png",
+    "desc": "爱折腾的安全小白"
+  }
+]

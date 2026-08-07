@@ -1,8 +1,8 @@
 {
-  "bio": "会计专业本科在读，业余时间自学编程，累计开发了 10+ 自用软件。",
-  "skills": ["Java", "Kotlin", "Python", "JavaScript", "Linux"],
+  "bio": "会计专业大学生，业余时间自学编程，借助al开发，累计开发了 10+ 自用软件，以及搭建两个网站，并涉足多种编程语言。",
+  "skills": ["C", "Kotlin", "Python", "JavaScript", "HTML5","c++","go"],
   "links": [
-    { "label": "GitHub", "url": "https://github.com/yourname" },
-    { "label": "Email", "url": "mailto:you@example.com" }
+    { "label": "GitHub", "url": "https://github.com/hsyxh2005" },
+    { "label": "Email", "url": "3857309293@qq.com" }
   ]
 }
