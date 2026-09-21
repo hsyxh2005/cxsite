@@ -1,4 +1,12 @@
 [
+    {
+    "name": "chenxi-booksite",
+    "desc": "晨曦书栈是一个运行在linux系统上使用满血nginx和mariadb数据库以及go后端搭建的集成了小说，视频，文章，后台管理等功能的综合性网站，充分发挥了linux系统的服务器功能。(2026.9)"
+  },
+  {
+    "name": "chenxi-booksite",
+    "desc": "晨曦书栈是一个运行在linux系统上使用满血nginx和mariadb数据库以及go后端搭建的集成了小说，视频，文章，后台管理等功能的综合性网站，充分发挥了linux系统的服务器功能。(2026.9)"
+  },
   {
     "name": "mornflux",
     "desc": "一个使用go语言开发的局域网文件传输助手，由前端文件index.html，mornflux.go，mornflux.exe构成，index.html文件放在static文件夹，mornflux支持所有类型文件的下载传输，使用websocket实时同步所有连接的设备，并支持一天清理所有过期文件，释放硬盘空间，支持连接状态显示，使用方法是双击mornflux.exe文件，会自动运行在9002端口，index.html作为前端，mornflux.exe文件作为后端接收文件，支持内网IP各设备点对点传输。(2026.8)"
